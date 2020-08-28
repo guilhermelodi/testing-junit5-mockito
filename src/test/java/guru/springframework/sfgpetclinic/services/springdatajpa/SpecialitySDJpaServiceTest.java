@@ -4,6 +4,7 @@ import guru.springframework.sfgpetclinic.model.Speciality;
 import guru.springframework.sfgpetclinic.repositories.SpecialtyRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -12,6 +13,8 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.atMost;
 import static org.mockito.Mockito.never;
@@ -67,12 +70,20 @@ class SpecialitySDJpaServiceTest {
         specialitySDJpaService.deleteById(1L);
 
         verify(specialtyRepository, times(1)).deleteById(1L);
+        verify(specialtyRepository, times(1)).deleteById(anyLong());
 
         verify(specialtyRepository, never()).deleteById(5L);
     }
 
     @Test
     void delete() {
-        specialitySDJpaService.delete(new Speciality());
+        final Speciality speciality = new Speciality(1L, "Cardiologia");
+        ArgumentCaptor<Speciality> argumentCaptor = ArgumentCaptor.forClass(Speciality.class);
+
+        specialitySDJpaService.delete(speciality);
+        verify(specialtyRepository).delete(argumentCaptor.capture());
+
+        verify(specialtyRepository).delete(any(Speciality.class));
+        assertEquals(speciality, argumentCaptor.getValue());
     }
 }
