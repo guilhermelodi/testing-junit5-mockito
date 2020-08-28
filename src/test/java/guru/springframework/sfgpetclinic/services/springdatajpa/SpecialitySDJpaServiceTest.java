@@ -8,11 +8,16 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.atMost;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class SpecialitySDJpaServiceTest {
@@ -22,6 +27,19 @@ class SpecialitySDJpaServiceTest {
 
     @InjectMocks
     private SpecialitySDJpaService specialitySDJpaService;
+
+    @Test
+    void findById() {
+        final Speciality speciality = new Speciality(1L, "Cardiologia");
+
+        when(specialtyRepository.findById(1L)).thenReturn(Optional.of(speciality));
+
+        final Speciality specialityReturned = specialitySDJpaService.findById(1L);
+
+        assertNotNull(specialityReturned);
+        assertEquals(speciality, specialityReturned);
+        verify(specialtyRepository).findById(1L);
+    }
 
     @Test
     void deleteById() {
