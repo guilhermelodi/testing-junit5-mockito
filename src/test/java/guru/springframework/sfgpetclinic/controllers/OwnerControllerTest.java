@@ -2,21 +2,27 @@ package guru.springframework.sfgpetclinic.controllers;
 
 import guru.springframework.sfgpetclinic.factory.OwnerFactory;
 import guru.springframework.sfgpetclinic.fauxspring.BindingResult;
+import guru.springframework.sfgpetclinic.fauxspring.Model;
 import guru.springframework.sfgpetclinic.model.Owner;
 import guru.springframework.sfgpetclinic.services.OwnerService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.verify;
@@ -31,14 +37,39 @@ class OwnerControllerTest {
     @Mock
     private OwnerService ownerService;
 
-    @InjectMocks
-    private OwnerController ownerController;
+    @Mock
+    private Model model;
 
     @Mock
     private BindingResult bindingResult;
 
+    @InjectMocks
+    private OwnerController ownerController;
+
     @Captor
     private ArgumentCaptor<String> stringArgumentCaptor;
+
+    @Test
+    void processFindFormInOrder() {
+        // given
+        Owner owner = OwnerFactory.build();
+        List<Owner> owners = Arrays.asList(OwnerFactory.build(), OwnerFactory.build());
+
+        ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+        when(ownerService.findAllByLastNameLike(captor.capture())).thenReturn(owners);
+
+        InOrder inOrder = Mockito.inOrder(ownerService, model);
+
+        // when
+        ownerController.processFindForm(owner, bindingResult, model);
+
+        // then
+        assertEquals("%"+ owner.getLastName() + "%", captor.getValue());
+
+        // inorder asserts
+        inOrder.verify(ownerService).findAllByLastNameLike(anyString());
+        inOrder.verify(model).addAttribute(anyString(), anyList());
+    }
 
     @Test
     void processFindFormWildcardString() {
@@ -49,7 +80,7 @@ class OwnerControllerTest {
         when(ownerService.findAllByLastNameLike(captor.capture())).thenReturn(owners);
 
         // when
-        ownerController.processFindForm(owner, bindingResult, null);
+        ownerController.processFindForm(owner, bindingResult, model);
 
         // then
         assertEquals("%"+ owner.getLastName() + "%", captor.getValue());
@@ -63,7 +94,7 @@ class OwnerControllerTest {
         when(ownerService.findAllByLastNameLike(stringArgumentCaptor.capture())).thenReturn(owners);
 
         // when
-        ownerController.processFindForm(owner, bindingResult, null);
+        ownerController.processFindForm(owner, bindingResult, model);
 
         // then
         assertEquals("%"+ owner.getLastName() + "%", stringArgumentCaptor.getValue());
@@ -78,7 +109,7 @@ class OwnerControllerTest {
         given(ownerService.findAllByLastNameLike(captor.capture())).willReturn(owners);
 
         // when
-        ownerController.processFindForm(owner, bindingResult, null);
+        ownerController.processFindForm(owner, bindingResult, model);
 
         // then
         assertEquals("%"+ owner.getLastName() + "%", captor.getValue());
