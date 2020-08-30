@@ -86,14 +86,13 @@ class VisitSDJpaServiceBDDTest {
         // given
         Visit visit = VisitFactory.build();
         visit.setId(null);
-        given(visitRepository.save(visit)).willReturn(visit);
+        ArgumentCaptor<Visit> argumentCaptor = ArgumentCaptor.forClass(Visit.class);
+        given(visitRepository.save(argumentCaptor.capture())).willReturn(visit);
 
         // when
         Visit visitSaved = visitSDJpaService.save(visit);
 
         // then
-        ArgumentCaptor<Visit> argumentCaptor = ArgumentCaptor.forClass(Visit.class);
-        then(visitRepository).should().save(argumentCaptor.capture());
         assertEquals(visit.getPet(), visitSaved.getPet());
         assertEquals(visit.getDescription(), visitSaved.getDescription());
         assertEquals(visit.getDate(), visitSaved.getDate());
